@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<title>Receita Secreta</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.css">
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f5f5f5;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+  }
+  #flipbook-container {
+    position: relative;
+    width: 100%;
+    max-width: 1190px; /* duas páginas lado a lado */
+  }
+  #flipbook {
+    width: 100%;
+    height: 100%;
+  }
+  #flipbook .page {
+    background: white;
+  }
+  #flipbook .page img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Botões */
+  .nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.8);
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    z-index: 20;
+  }
+  #prev-btn { left: 5px; }
+  #next-btn { right: 5px; }
+  /* Barra de progresso */
+  .progress-container {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    height: 6px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #4CAF50;
+    transition: width 0.3s;
+  }
+</style>
+</head>
+<body>
+
+<div id="flipbook-container">
+  <div id="flipbook">
+    <!-- Capa -->
+    <div class="page"><img src="capa.png" alt="Capa"></div>
+    <!-- Página 1 e 2 -->
+    <div class="page"><img src="pagina1.png" alt="Página 1"></div>
+    <div class="page"><img src="pagina2.png" alt="Página 2"></div>
+    <!-- Página 3 e 4 -->
+    <div class="page"><img src="pagina3.png" alt="Página 3"></div>
+    <div class="page"><img src="pagina4.png" alt="Página 4"></div>
+    <!-- Contracapa -->
+    <div class="page"><img src="contracapa.png" alt="Contracapa"></div>
+  </div>
+
+  <button id="prev-btn" class="nav-button">← Voltar</button>
+  <button id="next-btn" class="nav-button">Avançar →</button>
+
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/4.1.0/turn.min.js"></script>
+<script>
+$(document).ready(function(){
+  const totalPages = $('#flipbook .page').length;
+
+  function initFlipbook() {
+    const containerWidth = $('#flipbook-container').width();
+    const isSmall = containerWidth < 600; // ecrã pequeno
+    const containerHeight = isSmall ? containerWidth * 842 / 595 : containerWidth * 842 / 1190;
+
+    $('#flipbook').turn('destroy');
+    $('#flipbook').turn({
+      width: containerWidth,
+      height: containerHeight,
+      autoCenter: true,
+      acceleration: true,
+      display: isSmall ? 'single' : 'double',
+      pages: totalPages
+    });
+    atualizarProgress();
+  }
+
+  function atualizarProgress() {
+    let currentPage = $('#flipbook').turn('page');
+    $('#progress-bar').css('width', ((currentPage-1)/(totalPages-1))*100 + '%');
+  }
+
+  initFlipbook();
+
+  // Botões
+  $('#next-btn').click(() => { $('#flipbook').turn('next'); atualizarProgress(); });
+  $('#prev-btn').click(() => { $('#flipbook').turn('previous'); atualizarProgress(); });
+
+  // Teclado
+  $(document).keydown((e) => {
+    if(e.key === "ArrowRight") { $('#flipbook').turn('next'); atualizarProgress(); }
+    if(e.key === "ArrowLeft") { $('#flipbook').turn('previous'); atualizarProgress(); }
+  });
+
+  // Swipe toque
+  let touchStartX = 0;
+  let touchEndX = 0;
+  $('#flipbook').on('touchstart', (e) => { touchStartX = e.originalEvent.touches[0].screenX; });
+  $('#flipbook').on('touchend', (e) => {
+    touchEndX = e.originalEvent.changedTouches[0].screenX;
+    if(touchEndX < touchStartX - 50){ $('#flipbook').turn('next'); atualizarProgress(); }
+    if(touchEndX > touchStartX + 50){ $('#flipbook').turn('previous'); atualizarProgress(); }
+  });
+
+  // Ajuste automático no resize
+  $(window).resize(function(){
+    initFlipbook();
+  });
+});
+</script>
+
+</body>
+</html>
