@@ -9,7 +9,7 @@
 html, body {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* impede scroll vertical */
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -67,11 +67,14 @@ html, body {
 
 <div id="flipbook-container">
   <div id="flipbook">
+    <!-- Capa sozinha -->
     <div class="page"><img src="capa.png" alt="Capa"></div>
+    <!-- Páginas duplas -->
     <div class="page"><img src="pagina1.png" alt="Página 1"></div>
     <div class="page"><img src="pagina2.png" alt="Página 2"></div>
     <div class="page"><img src="pagina3.png" alt="Página 3"></div>
     <div class="page"><img src="pagina4.png" alt="Página 4"></div>
+    <!-- Contracapa sozinha -->
     <div class="page"><img src="contracapa.png" alt="Contracapa"></div>
   </div>
 </div>
@@ -89,34 +92,39 @@ function initFlipbook() {
   const width = container.width();
   const height = container.height();
   
-  // destrói instância antiga
+  // destrói instância antiga se existir
   if ($flipbook.hasClass('turn-page')) $flipbook.turn('destroy');
 
+  // inicializa Turn.js
   $flipbook.turn({
     width: width,
     height: height,
     autoCenter: true,
-    display: width < 600 ? 'single' : 'double' // single em telas pequenas
+    display: 'double' // páginas duplas no meio, capa/contracapa sozinhas
   });
 
-  $flipbook.turn('page', 1); // abre sempre na capa
+  $flipbook.turn('page', 1); // começa na capa
+
+  // botões
+  $('#prev').off('click').on('click', function() {
+    $flipbook.turn('previous');
+  });
+  $('#next').off('click').on('click', function() {
+    $flipbook.turn('next');
+  });
 }
 
-// inicializa
+// inicializa ao carregar a página
 $(document).ready(initFlipbook);
 $(window).on('resize', initFlipbook);
 
-// botões
-$('#prev').click(() => $flipbook.turn('previous'));
-$('#next').click(() => $flipbook.turn('next'));
-
-// teclas
-$(document).keydown(e => {
-  if (e.keyCode === 37) $flipbook.turn('previous');
-  if (e.keyCode === 39) $flipbook.turn('next');
+// teclado
+$(document).keydown(function(e) {
+  if (e.keyCode === 37) $flipbook.turn('previous'); // seta esquerda
+  if (e.keyCode === 39) $flipbook.turn('next');     // seta direita
 });
 
-// swipe para touch
+// swipe no touch
 let startX = 0;
 $('#flipbook').on('touchstart', e => startX = e.originalEvent.touches[0].clientX);
 $('#flipbook').on('touchend', e => {
